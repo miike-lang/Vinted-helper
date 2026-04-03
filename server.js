@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
 import dotenv from "dotenv";
 
@@ -9,21 +8,24 @@ const app = express();
 const PORT = process.env.PORT || 3333;
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Sta alles toe — ook claude.ai artifacts
+// CORS — alles toestaan
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") return res.sendStatus(200);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "*");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  res.setHeader("Access-Control-Max-Age", "86400");
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
   next();
 });
 
-app.use(express.json({ limit: "20mb" }));
+app.use(express.json({ limit: "25mb" }));
 
-// Health check
-app.get("/", (_, res) => res.json({ status: "VintedHelper backend actief ✅" }));
+app.get("/", (_, res) => {
+  res.json({ status: "VintedHelper backend actief" });
+});
 
-// Listing genereren
 app.post("/generate", async (req, res) => {
   try {
     const { photos = [], form = {} } = req.body;
@@ -37,10 +39,10 @@ app.post("/generate", async (req, res) => {
       form.extra && `Extra: ${form.extra}`,
     ].filter(Boolean).join(", ");
 
-    const prompt = `Jij bent een expert Vinted verkoper. Analyseer de foto('s) en schrijf een geweldige Nederlandstalige Vinted listing.${info ? ` Extra info: ${info}.` : ""}
+    const prompt = `Jij bent een expert Vinted verkoper. Analyseer de fotos en schrijf een geweldige Nederlandstalige Vinted listing.${info ? ` Extra info: ${info}.` : ""}
 
 Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
-{"titel":"max 60 tekens","omschrijving":"meerdere zinnen, eerlijk en aantrekkelijk","prijs":12,"prijsadvies":"waarom deze prijs","tags":["a","b","c","d","e"]}`;
+{"titel":"max 60 tekens","omschrijving":"meerdere zinnen eerlijk en aantrekkelijk","prijs":12,"prijsadvies":"waarom deze prijs","tags":["a","b","c","d","e"]}`;
 
     const content = [
       ...photos.map(p => ({
@@ -61,7 +63,7 @@ Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
     const e = txt.lastIndexOf("}");
 
     if (s === -1 || e === -1) {
-      return res.status(500).json({ error: "Geen geldige JSON in AI-antwoord", raw: txt });
+      return res.status(500).json({ error: "Geen JSON in antwoord", raw: txt });
     }
 
     res.json(JSON.parse(txt.slice(s, e + 1)));
@@ -73,5 +75,5 @@ Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
 });
 
 app.listen(PORT, () => {
-  console.log(`VintedHelper backend draait op poort ${PORT}`);
+  console.log(`VintedHelper draait op poort ${PORT}`);
 });
