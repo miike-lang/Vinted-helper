@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VintedHelper</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0f1923;font-family:'Inter',sans-serif;color:#e8f4f1;min-height:100vh}
+  .app{max-width:680px;margin:0 auto;padding:2rem 1.2rem 4rem}
+  .hdr{text-align:center;margin-bottom:2rem}
+  .logo{display:inline-flex;align-items:center;gap:.6rem;margin-bottom:.4rem}
+  .logo-ic{width:38px;height:38px;background:#00c4a7;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  h1{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;color:#fff}
+  .sub{color:#4a7090;font-size:.88rem;margin-top:.25rem}
+  .card{background:#162030;border:1px solid #1e3045;border-radius:16px;padding:1.5rem;margin-bottom:1rem}
+  .ct{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#00c4a7;margin-bottom:1rem}
+  .drop{border:2px dashed #1e3045;border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;position:relative}
+  .drop:hover,.drop.ov{border-color:#00c4a7;background:rgba(0,196,167,.05)}
+  .drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.6rem}
+  .pthumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid #1e3045}
+  .pthumb img{width:100%;height:100%;object-fit:cover}
+  .pdel{position:absolute;top:4px;right:4px;background:rgba(15,25,35,.85);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer}
+  .padd{aspect-ratio:1;border:2px dashed #1e3045;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;color:#4a7090;font-size:.75rem;gap:.3rem;transition:.2s}
+  .padd:hover{border-color:#00c4a7;color:#00c4a7}
+  .padd input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .pcnt{font-size:.78rem;color:#4a7090;margin-top:.6rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.75rem}
+  .fld{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.75rem}
+  .fld label{font-size:.75rem;font-weight:500;color:#4a7090;text-transform:uppercase;letter-spacing:.06em}
+  .fld input,.fld select,.fld textarea{background:#0f1923;border:1px solid #1e3045;border-radius:8px;color:#e8f4f1;font-family:'Inter',sans-serif;font-size:.9rem;padding:.6rem .85rem;outline:none;transition:.2s;width:100%}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:#00c4a7}
+  .fld select option{background:#0f1923}
+  .btn{width:100%;padding:.9rem;background:#00c4a7;color:#0f1923;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:.2s;margin-top:.5rem}
+  .btn:hover:not(:disabled){opacity:.88}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:transparent;border:1px solid #00c4a7;color:#00c4a7}
+  .btn.sm{font-size:.8rem;padding:.6rem;font-weight:500}
+  .btn.danger{border-color:rgba(220,60,60,.4);color:#ff7070}
+  .spin{width:18px;height:18px;border:2px solid rgba(15,25,35,.3);border-top-color:#0f1923;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .res{animation:fu .4s ease both}
+  @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .rl{font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#00c4a7;margin-bottom:.35rem}
+  .rb{background:#0f1923;border:1px solid #1e3045;border-radius:10px;padding:.85rem 3.5rem .85rem 1rem;font-size:.9rem;line-height:1.6;color:#e8f4f1;position:relative;white-space:pre-wrap;word-break:break-word}
+  .cpb{position:absolute;top:.5rem;right:.5rem;background:#1e3045;border:none;border-radius:6px;color:#4a7090;font-size:.68rem;padding:.22rem .5rem;cursor:pointer;transition:.2s;white-space:nowrap}
+  .cpb:hover,.cpb.done{background:#00c4a7;color:#0f1923}
+  .tags{display:flex;flex-wrap:wrap;gap:.4rem;padding:.65rem .85rem;background:#0f1923;border:1px solid #1e3045;border-radius:10px}
+  .tag{background:rgba(0,196,167,.12);color:#00c4a7;border:1px solid rgba(0,196,167,.25);border-radius:20px;font-size:.76rem;padding:.18rem .6rem}
+  .pbadge{display:inline-flex;align-items:center;background:rgba(0,196,167,.12);border:1px solid rgba(0,196,167,.3);border-radius:8px;padding:.5rem 1rem;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#00c4a7}
+  .pnote{font-size:.77rem;color:#4a7090;margin-top:.35rem}
+  .err{background:rgba(220,60,60,.1);border:1px solid rgba(220,60,60,.3);border-radius:10px;padding:.75rem 1rem;font-size:.84rem;color:#ff7070;margin-top:1rem;line-height:1.5;word-break:break-word}
+  .rf{margin-bottom:1rem}
+  .tabs{display:flex;gap:.5rem;margin-bottom:1.25rem}
+  .tab{flex:1;padding:.6rem;background:#162030;border:1px solid #1e3045;border-radius:10px;color:#4a7090;font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;text-align:center;transition:.2s;border:none}
+  .tab.active{background:rgba(0,196,167,.12);border:1px solid #00c4a7;color:#00c4a7}
+  .empty{text-align:center;color:#4a7090;padding:2rem;font-size:.88rem}
+  .hist-item{background:#0f1923;border:1px solid #1e3045;border-radius:10px;padding:.85rem 1rem;margin-bottom:.6rem;cursor:pointer;transition:.2s;display:flex;gap:.75rem;align-items:center}
+  .hist-item:hover{border-color:#00c4a7}
+  .hist-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0}
+  .hist-title{font-weight:500;font-size:.9rem;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist-meta{font-size:.74rem;color:#4a7090}
+  .hist-price{color:#00c4a7;font-family:'Syne',sans-serif;font-weight:700;float:right;margin-left:.5rem}
+  .row{display:flex;gap:.5rem;margin-top:.75rem}
+  @media(max-width:480px){.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div class="logo"><div class="logo-ic">👗</div><h1>VintedHelper</h1></div>
+    <p class="sub">Upload foto's → AI schrijft je listing in seconden</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-new" onclick="showTab('new')">✨ Nieuwe listing</button>
+    <button class="tab" id="tab-hist" onclick="showTab('hist')">📋 Opgeslagen <span id="hist-count"></span></button>
+  </div>
+
+  <!-- NEW TAB -->
+  <div id="view-new">
+    <div class="card">
+      <div class="ct">📸 Foto's <span id="photo-count-label"></span></div>
+      <div id="drop-zone" class="drop" ondragover="event.preventDefault();this.classList.add('ov')" ondragleave="this.classList.remove('ov')" ondrop="onDrop(event)">
+        <input type="file" accept="image/*" multiple onchange="addFiles(this.files)">
+        <div style="font-size:2rem;margin-bottom:.5rem">📷</div>
+        <div style="color:#4a7090;font-size:.87rem"><span style="color:#00c4a7;font-weight:500">Klik om te uploaden</span> of sleep hierheen</div>
+        <div style="color:#4a7090;font-size:.76rem;margin-top:.3rem">Max 6 foto's · JPG PNG WEBP</div>
+      </div>
+      <div id="photo-grid" class="pgrid" style="display:none"></div>
+      <p id="photo-info" class="pcnt" style="display:none"></p>
+    </div>
+
+    <div class="card">
+      <div class="ct">✏️ Details (optioneel)</div>
+      <div class="g2">
+        <div class="fld"><label>Categorie</label>
+          <select id="f-cat">
+            <option value="">Kies...</option>
+            <option>Dameskleding</option><option>Herenkleding</option><option>Kinderkleding</option>
+            <option>Schoenen</option><option>Tassen & accessoires</option><option>Sportkleding</option>
+            <option>Vintage</option><option>Woondecoratie</option><option>Elektronica</option><option>Overig</option>
+          </select>
+        </div>
+        <div class="fld"><label>Staat</label>
+          <select id="f-cond">
+            <option value="">Kies...</option>
+            <option>Nieuw met label</option><option>Nieuw zonder label</option>
+            <option>Zeer goed</option><option>Goed</option><option>Redelijk</option>
+          </select>
+        </div>
+        <div class="fld"><label>Merk</label><input id="f-brand" placeholder="bijv. Zara, Nike"></div>
+        <div class="fld"><label>Maat</label><input id="f-size" placeholder="bijv. M, 38"></div>
+      </div>
+      <div class="fld"><label>Kleur</label><input id="f-color" placeholder="bijv. donkerblauw, wit"></div>
+      <div class="fld"><label>Extra info</label><textarea id="f-extra" rows="2" placeholder="Gebreken, materiaal, aankoopprijs..." style="resize:vertical"></textarea></div>
+    </div>
+
+    <button class="btn" id="gen-btn" onclick="generate()">✨ Genereer listing</button>
+    <div id="error-box" class="err" style="display:none"></div>
+
+    <div id="result-box" class="res" style="display:none;margin-top:1.5rem">
+      <div class="card">
+        <div class="ct">🏷️ Jouw Vinted listing</div>
+        <div class="rf"><div class="rl">Titel</div>
+          <div class="rb" id="r-titel"><button class="cpb" onclick="copyField('r-titel','cp-t',this)">Kopieer</button></div>
+        </div>
+        <div class="rf"><div class="rl">Omschrijving</div>
+          <div class="rb" id="r-omschrijving"><button class="cpb" onclick="copyField('r-omschrijving','cp-o',this)">Kopieer</button></div>
+        </div>
+        <div class="rf"><div class="rl">Aanbevolen prijs</div>
+          <div class="pbadge" id="r-prijs"></div>
+          <div class="pnote" id="r-prijsadvies"></div>
+        </div>
+        <div class="rf"><div class="rl">Tags</div><div class="tags" id="r-tags"></div></div>
+        <div class="row">
+          <button class="btn ghost" style="flex:1" onclick="copyAll()">📋 Kopieer alles</button>
+          <button class="btn ghost sm" style="flex:0 0 auto;padding:.6rem 1rem" onclick="resetForm()">🔄 Nieuw</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="view-hist" style="display:none">
+    <div id="hist-list"></div>
+    <div id="hist-detail" style="display:none">
+      <button class="btn ghost sm" style="margin-bottom:1rem" onclick="closeDetail()">← Terug</button>
+      <div class="card">
+        <img id="d-thumb" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;margin-bottom:1rem;display:none">
+        <div class="ct">🏷️ Listing</div>
+        <div class="rf"><div class="rl">Titel</div>
+          <div class="rb" id="d-titel"><button class="cpb" onclick="copyField('d-titel','dcp-t',this)">Kopieer</button></div>
+        </div>
+        <div class="rf"><div class="rl">Omschrijving</div>
+          <div class="rb" id="d-omschrijving"><button class="cpb" onclick="copyField('d-omschrijving','dcp-o',this)">Kopieer</button></div>
+        </div>
+        <div class="rf"><div class="rl">Prijs</div>
+          <div class="pbadge" id="d-prijs"></div>
+          <div class="pnote" id="d-prijsadvies"></div>
+        </div>
+        <div class="rf"><div class="rl">Tags</div><div class="tags" id="d-tags"></div></div>
+        <div class="row">
+          <button class="btn ghost" style="flex:1" onclick="copyDetailAll()">📋 Kopieer tekst</button>
+          <button class="btn ghost sm danger" style="flex:0 0 auto;padding:.6rem 1rem" onclick="deleteDetail()">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "vh_history_v3";
+let photos = []; // {b64, mime, previewUrl}
+let history = [];
+let currentDetail = null;
+
+function loadHistory() {
+  try { history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { history = []; }
+}
+function saveHistory() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch {}
+}
+loadHistory();
+
+function timeAgo(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000) return "zojuist";
+  if (d < 3600000) return Math.floor(d/60000) + " min geleden";
+  if (d < 86400000) return Math.floor(d/3600000) + " uur geleden";
+  return new Date(ts).toLocaleDateString("nl-NL");
+}
+
+function showTab(t) {
+  document.getElementById("view-new").style.display = t === "new" ? "" : "none";
+  document.getElementById("view-hist").style.display = t === "hist" ? "" : "none";
+  document.getElementById("tab-new").className = "tab" + (t==="new"?" active":"");
+  document.getElementById("tab-hist").className = "tab" + (t==="hist"?" active":"");
+  if (t === "hist") renderHistory();
+}
+
+// Photo handling
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById("drop-zone").classList.remove("ov");
+  addFiles(e.dataTransfer.files);
+}
+
+function addFiles(files) {
+  const imgs = Array.from(files).filter(f => f.type.startsWith("image/")).slice(0, 6 - photos.length);
+  let done = 0;
+  if (!imgs.length) return;
+  imgs.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = e.target.result;
+      photos.push({ b64: data.split(",")[1], mime: f.type || "image/jpeg", previewUrl: data });
+      done++;
+      if (done === imgs.length) renderPhotos();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function removePhoto(i) {
+  photos.splice(i, 1);
+  renderPhotos();
+}
+
+function renderPhotos() {
+  const dz = document.getElementById("drop-zone");
+  const grid = document.getElementById("photo-grid");
+  const info = document.getElementById("photo-info");
+  const label = document.getElementById("photo-count-label");
+
+  if (photos.length === 0) {
+    dz.style.display = "";
+    grid.style.display = "none";
+    info.style.display = "none";
+    label.textContent = "";
+    return;
+  }
+  dz.style.display = "none";
+  grid.style.display = "grid";
+  info.style.display = "";
+  label.textContent = "(" + photos.length + "/6)";
+  info.textContent = photos.length + " foto" + (photos.length !== 1 ? "'s" : "") + " — AI analyseert ze allemaal";
+
+  grid.innerHTML = photos.map((p, i) =>
+    `<div class="pthumb"><img src="${p.previewUrl}"><button class="pdel" onclick="removePhoto(${i})">✕</button></div>`
+  ).join("") + (photos.length < 6 ? `<div class="padd"><input type="file" accept="image/*" multiple onchange="addFiles(this.files)"><span style="font-size:1.5rem">＋</span><span>Toevoegen</span></div>` : "");
+}
+
+// Generate
+async function generate() {
+  const btn = document.getElementById("gen-btn");
+  const errBox = document.getElementById("error-box");
+  const resultBox = document.getElementById("result-box");
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div> Genereren...';
+  errBox.style.display = "none";
+  resultBox.style.display = "none";
+
+  const form = {
+    cat: document.getElementById("f-cat").value,
+    cond: document.getElementById("f-cond").value,
+    brand: document.getElementById("f-brand").value,
+    size: document.getElementById("f-size").value,
+    color: document.getElementById("f-color").value,
+    extra: document.getElementById("f-extra").value,
+  };
+
+  try {
+    const resp = await fetch("/generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ photos, form })
+    });
+
+    const text = await resp.text();
+    if (!resp.ok) {
+      let msg = "HTTP " + resp.status;
+      try { msg = JSON.parse(text).error || msg; } catch {}
+      throw new Error(msg);
+    }
+
+    const data = JSON.parse(text);
+
+    // Show result
+    setTextContent("r-titel", data.titel);
+    setTextContent("r-omschrijving", data.omschrijving);
+    document.getElementById("r-prijs").textContent = "€" + data.prijs;
+    document.getElementById("r-prijsadvies").textContent = data.prijsadvies || "";
+    document.getElementById("r-tags").innerHTML = (data.tags || []).map(t => `<span class="tag">#${t}</span>`).join("");
+    resultBox.style.display = "";
+
+    // Save to history
+    const item = { ...data, ts: Date.now(), thumb: photos[0]?.previewUrl || null };
+    history.unshift(item);
+    if (history.length > 50) history.pop();
+    saveHistory();
+    updateHistCount();
+
+  } catch(e) {
+    errBox.textContent = "⚠️ " + e.message;
+    errBox.style.display = "";
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "✨ Genereer listing";
+}
+
+function setTextContent(id, text) {
+  const el = document.getElementById(id);
+  // Set text but keep the copy button
+  const btn = el.querySelector(".cpb");
+  el.textContent = text;
+  el.appendChild(btn);
+}
+
+function copyField(elId, key, btn) {
+  const el = document.getElementById(elId);
+  const text = el.textContent.replace("Kopieer", "").replace("✓", "").trim();
+  navigator.clipboard.writeText(text);
+  btn.textContent = "✓";
+  btn.classList.add("done");
+  setTimeout(() => { btn.textContent = "Kopieer"; btn.classList.remove("done"); }, 2000);
+}
+
+function copyAll() {
+  const titel = document.getElementById("r-titel").textContent.replace("Kopieer","").replace("✓","").trim();
+  const omschr = document.getElementById("r-omschrijving").textContent.replace("Kopieer","").replace("✓","").trim();
+  navigator.clipboard.writeText(titel + "\n\n" + omschr);
+}
+
+function copyDetailAll() {
+  const titel = document.getElementById("d-titel").textContent.replace("Kopieer","").replace("✓","").trim();
+  const omschr = document.getElementById("d-omschrijving").textContent.replace("Kopieer","").replace("✓","").trim();
+  navigator.clipboard.writeText(titel + "\n\n" + omschr);
+}
+
+function resetForm() {
+  photos = [];
+  renderPhotos();
+  ["f-cat","f-cond","f-brand","f-size","f-color","f-extra"].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = "";
+  });
+  document.getElementById("result-box").style.display = "none";
+  document.getElementById("error-box").style.display = "none";
+}
+
+// History
+function updateHistCount() {
+  const el = document.getElementById("hist-count");
+  el.textContent = history.length > 0 ? "(" + history.length + ")" : "";
+}
+
+function renderHistory() {
+  const list = document.getElementById("hist-list");
+  const detail = document.getElementById("hist-detail");
+  detail.style.display = "none";
+  currentDetail = null;
+
+  if (history.length === 0) {
+    list.innerHTML = '<div class="empty">Nog geen listings opgeslagen.<br>Maak je eerste via het ✨-tabblad!</div>';
+    return;
+  }
+
+  list.innerHTML = history.map((h, i) => `
+    <div class="hist-item" onclick="openDetail(${i})">
+      ${h.thumb ? `<img class="hist-thumb" src="${h.thumb}">` : ""}
+      <div style="flex:1;min-width:0">
+        <div class="hist-title"><span class="hist-price">€${h.prijs}</span>${h.titel}</div>
+        <div class="hist-meta">${timeAgo(h.ts)}</div>
+      </div>
+    </div>
+  `).join("") + `<button class="btn ghost sm danger" style="margin-top:.5rem;width:100%" onclick="clearHistory()">🗑️ Alles wissen</button>`;
+}
+
+function openDetail(i) {
+  currentDetail = i;
+  const h = history[i];
+  document.getElementById("hist-list").style.display = "none";
+  const detail = document.getElementById("hist-detail");
+  detail.style.display = "";
+
+  const thumb = document.getElementById("d-thumb");
+  if (h.thumb) { thumb.src = h.thumb; thumb.style.display = ""; }
+  else thumb.style.display = "none";
+
+  setTextContent("d-titel", h.titel);
+  setTextContent("d-omschrijving", h.omschrijving);
+  document.getElementById("d-prijs").textContent = "€" + h.prijs;
+  document.getElementById("d-prijsadvies").textContent = h.prijsadvies || "";
+  document.getElementById("d-tags").innerHTML = (h.tags || []).map(t => `<span class="tag">#${t}</span>`).join("");
+}
+
+function closeDetail() {
+  document.getElementById("hist-detail").style.display = "none";
+  document.getElementById("hist-list").style.display = "";
+  currentDetail = null;
+}
+
+function deleteDetail() {
+  if (currentDetail === null) return;
+  history.splice(currentDetail, 1);
+  saveHistory();
+  updateHistCount();
+  closeDetail();
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!confirm("Alle listings wissen?")) return;
+  history = [];
+  saveHistory();
+  updateHistCount();
+  renderHistory();
+}
+
+updateHistCount();
+</script>
+</body>
+</html>
