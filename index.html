@@ -208,20 +208,34 @@ function onDrop(e) {
   addFiles(e.dataTransfer.files);
 }
 
-function addFiles(files) {
-  const imgs = Array.from(files).filter(f => f.type.startsWith("image/")).slice(0, 6 - photos.length);
-  let done = 0;
-  if (!imgs.length) return;
-  imgs.forEach(f => {
+function resizeImage(file, maxPx = 800, quality = 0.55) {
+  return new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => {
-      const data = e.target.result;
-      photos.push({ b64: data.split(",")[1], mime: f.type || "image/jpeg", previewUrl: data });
-      done++;
-      if (done === imgs.length) renderPhotos();
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve({ b64: dataUrl.split(",")[1], mime: "image/jpeg", previewUrl: dataUrl });
+      };
+      img.src = e.target.result;
     };
-    reader.readAsDataURL(f);
+    reader.readAsDataURL(file);
   });
+}
+
+async function addFiles(files) {
+  const imgs = Array.from(files).filter(f => f.type.startsWith("image/")).slice(0, 6 - photos.length);
+  if (!imgs.length) return;
+  const loaded = await Promise.all(imgs.map(f => resizeImage(f)));
+  photos.push(...loaded);
+  photos = photos.slice(0, 6);
+  renderPhotos();
 }
 
 function removePhoto(i) {
