@@ -1,31 +1,31 @@
 import express from "express";
 import Anthropic from "@anthropic-ai/sdk";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 dotenv.config();
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3333;
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// CORS — alles toestaan
+// CORS
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
-  res.setHeader("Access-Control-Max-Age", "86400");
-  if (req.method === "OPTIONS") {
-    return res.status(204).end();
-  }
+  if (req.method === "OPTIONS") return res.status(204).end();
   next();
 });
 
 app.use(express.json({ limit: "25mb" }));
 
-app.get("/", (_, res) => {
-  res.json({ status: "VintedHelper backend actief" });
-});
+// Serveer de frontend
+app.use(express.static(__dirname));
 
+// Listing genereren
 app.post("/generate", async (req, res) => {
   try {
     const { photos = [], form = {} } = req.body;
