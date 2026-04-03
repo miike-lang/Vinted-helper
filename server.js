@@ -1,0 +1,71 @@
+import express from "express";
+import cors from "cors";
+import Anthropic from "@anthropic-ai/sdk";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3333;
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+app.use(cors({ origin: "*" }));
+app.use(express.json({ limit: "20mb" })); // groot genoeg voor base64 foto's
+
+// Health check
+app.get("/", (_, res) => res.json({ status: "VintedHelper backend actief ✅" }));
+
+// Listing genereren
+app.post("/generate", async (req, res) => {
+  try {
+    const { photos = [], form = {} } = req.body;
+
+    const info = [
+      form.cat   && `Categorie: ${form.cat}`,
+      form.cond  && `Staat: ${form.cond}`,
+      form.brand && `Merk: ${form.brand}`,
+      form.size  && `Maat: ${form.size}`,
+      form.color && `Kleur: ${form.color}`,
+      form.extra && `Extra: ${form.extra}`,
+    ].filter(Boolean).join(", ");
+
+    const prompt = `Jij bent een expert Vinted verkoper. Analyseer de foto('s) en schrijf een geweldige Nederlandstalige Vinted listing.${info ? ` Extra info: ${info}.` : ""}
+
+Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
+{"titel":"max 60 tekens","omschrijving":"meerdere zinnen, eerlijk en aantrekkelijk","prijs":12,"prijsadvies":"waarom deze prijs","tags":["a","b","c","d","e"]}`;
+
+    // Bouw content array op: foto's eerst, dan tekst
+    const content = [
+      ...photos.map(p => ({
+        type: "image",
+        source: { type: "base64", media_type: p.mime, data: p.b64 }
+      })),
+      { type: "text", text: prompt }
+    ];
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1024,
+      messages: [{ role: "user", content }]
+    });
+
+    const txt = message.content.map(b => b.text || "").join("").trim();
+    const s = txt.indexOf("{");
+    const e = txt.lastIndexOf("}");
+
+    if (s === -1 || e === -1) {
+      return res.status(500).json({ error: "Geen geldige JSON in AI-antwoord", raw: txt });
+    }
+
+    const result = JSON.parse(txt.slice(s, e + 1));
+    res.json(result);
+
+  } catch (err) {
+    console.error("Fout:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ VintedHelper backend draait op http://localhost:${PORT}`);
+});
