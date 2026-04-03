@@ -9,8 +9,16 @@ const app = express();
 const PORT = process.env.PORT || 3333;
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-app.use(cors({ origin: "*" }));
-app.use(express.json({ limit: "20mb" })); // groot genoeg voor base64 foto's
+// Sta alles toe — ook claude.ai artifacts
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+  next();
+});
+
+app.use(express.json({ limit: "20mb" }));
 
 // Health check
 app.get("/", (_, res) => res.json({ status: "VintedHelper backend actief ✅" }));
@@ -34,7 +42,6 @@ app.post("/generate", async (req, res) => {
 Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
 {"titel":"max 60 tekens","omschrijving":"meerdere zinnen, eerlijk en aantrekkelijk","prijs":12,"prijsadvies":"waarom deze prijs","tags":["a","b","c","d","e"]}`;
 
-    // Bouw content array op: foto's eerst, dan tekst
     const content = [
       ...photos.map(p => ({
         type: "image",
@@ -57,8 +64,7 @@ Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
       return res.status(500).json({ error: "Geen geldige JSON in AI-antwoord", raw: txt });
     }
 
-    const result = JSON.parse(txt.slice(s, e + 1));
-    res.json(result);
+    res.json(JSON.parse(txt.slice(s, e + 1)));
 
   } catch (err) {
     console.error("Fout:", err.message);
@@ -67,5 +73,5 @@ Antwoord ALLEEN met dit JSON-object, niets anders, geen markdown:
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ VintedHelper backend draait op http://localhost:${PORT}`);
+  console.log(`VintedHelper backend draait op poort ${PORT}`);
 });
